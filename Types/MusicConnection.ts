@@ -7,14 +7,13 @@ import {
   VoiceConnection,
   VoiceConnectionDisconnectReason,
   VoiceConnectionStatus,
-  AudioPlayerState,
   AudioPlayerPlayingState,
   AudioPlayerError,
 } from "@discordjs/voice";
-import type { Song } from "../Types/Song";
+import type { Song } from "./Song";
 import { promisify } from "node:util";
 
-export class MusicPlayer {
+export class MusicConnection {
   public readonly connection: VoiceConnection;
   public readonly player: AudioPlayer;
   public queue: Song[];

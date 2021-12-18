@@ -1,18 +1,9 @@
 import DiscordJS, { Snowflake } from "discord.js";
-const {
-  joinVoiceChannel,
-  createAudioPlayer,
-  demuxProbe,
-  entersState,
-  VoiceConnectionStatus,
-} = require("@discordjs/voice");
-import ytdlCore from "ytdl-core";
+const { joinVoiceChannel } = require("@discordjs/voice");
 import { BotCommand } from "../Types/BotCommand";
-import { MusicPlayer } from "../Types/MusicPlayer";
+import { MusicConnection } from "../Types/MusicConnection";
 import { Song } from "../Types/Song";
-import { FindSong } from "../functions/helper";
-
-const subscriptions = new Map<Snowflake, MusicPlayer>();
+import SubscriptionStorage from "../functions/SubscriptionStorage";
 
 export default {
   name: "play",
@@ -34,7 +25,7 @@ export default {
     interaction.followUp(`Searching for ${searchText}`);
 
     var member = await interaction.guild?.members.fetch({ user, force: true });
-    let subscription = subscriptions.get(interaction.guildId);
+    let subscription = SubscriptionStorage.get(interaction.guildId);
     // console.log(member, member?.voice);
     // if (!member?.voice.channel) {
     //   interaction.reply({
@@ -51,26 +42,26 @@ export default {
     //   return;
     // }
 
-    const connection = joinVoiceChannel({
-      channelId: "918589401590808651",
-      guildId: interaction.guildId,
-      adapterCreator: interaction.guild?.voiceAdapterCreator,
-    });
+    if (!subscription) {
+      const connection = joinVoiceChannel({
+        channelId: "918589401590808651",
+        guildId: interaction.guildId,
+        adapterCreator: interaction.guild?.voiceAdapterCreator,
+      });
 
-    const musicPlayer = new MusicPlayer(connection);
-    subscriptions.set(interaction.guildId, musicPlayer);
-    subscription = musicPlayer;
-
-    console.log(connection.voiceConnection);
+      const musicConnection = new MusicConnection(connection);
+      SubscriptionStorage.set(interaction.guildId, musicConnection);
+      subscription = musicConnection;
+    }
 
     const song = await Song.from(searchText, {
       onStart() {
         interaction
-          .followUp({ content: `Now playing ! ${song?.title}` })
+          .followUp({ content: `Now playing ! **${song?.title}**` })
           .catch(console.warn);
       },
       onFinish() {
-        interaction.followUp({ content: "Now finished!" }).catch(console.warn);
+        // interaction.followUp({ content: "Now finished!" }).catch(console.warn);
       },
       onError(error) {
         console.warn(error);
