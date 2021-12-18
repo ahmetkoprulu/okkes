@@ -14,6 +14,7 @@ import {
 } from "@discordjs/voice";
 import type { Song } from "./Song";
 import { promisify } from "node:util";
+import SubscriptionStorage from "../functions/SubscriptionStorage";
 
 export class MusicConnection {
   public readonly connection: VoiceConnection;
@@ -42,6 +43,7 @@ export class MusicConnection {
     this.queueLock = true;
     this.queue = [];
     this.player.stop(true);
+    SubscriptionStorage.delete(this.connection.joinConfig.guildId);
   }
 
   private async processQueue(): Promise<void> {
