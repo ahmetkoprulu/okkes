@@ -12,14 +12,14 @@ export default class SubscriptionStorage {
   private static subscriptions = new Map<Snowflake, MusicConnection>();
 
   public static get(id: string): MusicConnection | undefined {
-    return this.subscriptions.get("918589401590808651");
+    return this.subscriptions.get(id);
   }
 
   public static set(id: string, connection: MusicConnection): void {
-    this.subscriptions.set("918589401590808651", connection);
+    this.subscriptions.set(id, connection);
   }
 
   public static delete(id: string): void {
-    this.subscriptions.delete("918589401590808651");
+    this.subscriptions.delete(id);
   }
 }

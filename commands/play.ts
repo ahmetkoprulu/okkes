@@ -1,4 +1,4 @@
-import DiscordJS, { Snowflake } from "discord.js";
+import DiscordJS, { GuildMember } from "discord.js";
 const { joinVoiceChannel } = require("@discordjs/voice");
 import { BotCommand } from "../Types/BotCommand";
 import { MusicConnection } from "../Types/MusicConnection";
@@ -20,30 +20,17 @@ export default {
     await interaction.deferReply();
     const { commandName, user, options } = interaction;
     const searchText = options.getString("text") || "";
-
-    interaction.followUp(`Searching for ${searchText}`);
-
-    var member = await interaction.guild?.members.fetch({ user, force: true });
     let subscription = SubscriptionStorage.get(interaction.guildId);
-    // console.log(member, member?.voice);
-    // if (!member?.voice.channel) {
-    //   interaction.reply({
-    //     content: "You should be in voice channel to use voice related actions.",
-    //   });
-
-    //   return;
-    // }
-
-    // var song = await FindSong(searchText);
-    // if (!song) {
-    //   interaction.followUp("Could not find the song you looking for.");
-
-    //   return;
-    // }
 
     if (!subscription) {
+      const member = interaction.member as GuildMember;
+      if (!isUserInChannel(member)) {
+        interaction.followUp("Join a voice channel to summon ökkeş!");
+
+        return;
+      }
       const connection = joinVoiceChannel({
-        channelId: "918589401590808651",
+        channelId: member.voice.channelId,
         guildId: interaction.guildId,
         adapterCreator: interaction.guild?.voiceAdapterCreator,
       });
@@ -52,6 +39,8 @@ export default {
       SubscriptionStorage.set(interaction.guildId, musicConnection);
       subscription = musicConnection;
     }
+
+    interaction.followUp(`Searching for ${searchText}`);
 
     const song = await Song.from(searchText, {
       onStart() {
@@ -80,3 +69,7 @@ export default {
     await interaction.followUp(`Enqueued **${song.title}**`);
   },
 } as BotCommand;
+
+function isUserInChannel(member: GuildMember) {
+  return member instanceof GuildMember && member.voice.channel;
+}
