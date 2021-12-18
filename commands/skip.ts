@@ -3,8 +3,8 @@ import { BotCommand } from "../Types/BotCommand";
 import SubscriptionStorage from "../functions/SubscriptionStorage";
 
 export default {
-  name: "disconnect",
-  description: "Disconnects ökkeş",
+  name: "skip",
+  description: "Skips to the next song in the queue",
   async execute(
     interaction: DiscordJS.CommandInteraction<DiscordJS.CacheType>
   ) {
@@ -18,9 +18,10 @@ export default {
       return;
     }
 
-    subscription.connection.destroy();
-    await interaction.followUp({
-      content: `Ökkeş is leaving...`,
-    });
+    // Calling .stop() on an AudioPlayer causes it to transition into the Idle state. Because of a state transition
+    // listener defined in music/subscription.ts, transitions into the Idle state mean the next track from the queue
+    // will be loaded and played.
+    subscription.player.stop();
+    await interaction.followUp("Skipped to the next song!");
   },
 } as BotCommand;

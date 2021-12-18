@@ -9,6 +9,8 @@ import {
   VoiceConnectionStatus,
   AudioPlayerPlayingState,
   AudioPlayerError,
+  AudioPlayerState,
+  AudioPlayerIdleState,
 } from "@discordjs/voice";
 import type { Song } from "./Song";
 import { promisify } from "node:util";
@@ -109,14 +111,17 @@ export class MusicConnection {
   }
 
   private listenPlayerStateChanges(): any {
-    // this.player.on(
-    //   AudioPlayerStatus.Idle,
-    //   (oldState: AudioPlayerState, newState: AudioPlayerState) => {
-    //     // If the Playing state has been entered, then a new track has started playback.
-    //     (oldState.resource as AudioResource<Song>).metadata.onFinish();
-    //     void this.processQueue();
-    //   }
-    // );
+    this.player.on(
+      AudioPlayerStatus.Idle,
+      (oldState: AudioPlayerState, newState: AudioPlayerIdleState) => {
+        // If the Playing state has been entered, then a new track has started playback.
+        let o = oldState as { state?: string; resource?: any };
+        if (!o.resource) return;
+
+        (o.resource as AudioResource<Song>).metadata.onFinish();
+        void this.processQueue();
+      }
+    );
 
     this.player.on(
       AudioPlayerStatus.Playing,

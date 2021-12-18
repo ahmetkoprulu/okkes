@@ -3,8 +3,8 @@ import { BotCommand } from "../Types/BotCommand";
 import SubscriptionStorage from "../functions/SubscriptionStorage";
 
 export default {
-  name: "disconnect",
-  description: "Disconnects ökkeş",
+  name: "pause",
+  description: "Pauses the music player",
   async execute(
     interaction: DiscordJS.CommandInteraction<DiscordJS.CacheType>
   ) {
@@ -18,9 +18,7 @@ export default {
       return;
     }
 
-    subscription.connection.destroy();
-    await interaction.followUp({
-      content: `Ökkeş is leaving...`,
-    });
+    subscription.player.pause();
+    await interaction.followUp(`Player paused!`);
   },
 } as BotCommand;

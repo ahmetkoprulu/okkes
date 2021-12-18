@@ -14,7 +14,6 @@ export default {
     await interaction.deferReply();
 
     const subscription = SubscriptionStorage.get(interaction.guildId);
-    console.log(subscription);
     if (!subscription) {
       await interaction.followUp("Ökkeş is not in a channel");
 

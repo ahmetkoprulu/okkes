@@ -19,7 +19,6 @@ export default {
   async execute(interaction) {
     await interaction.deferReply();
     const { commandName, user, options } = interaction;
-    console.info(`** ${commandName} Executed`);
     const searchText = options.getString("text") || "";
 
     interaction.followUp(`Searching for ${searchText}`);
