@@ -1,13 +1,18 @@
-import DiscordJS from "discord.js";
+import DiscordJS, { Snowflake } from "discord.js";
 const {
   joinVoiceChannel,
   createAudioPlayer,
-  createAudioResource,
   demuxProbe,
+  entersState,
+  VoiceConnectionStatus,
 } = require("@discordjs/voice");
 import ytdlCore from "ytdl-core";
 import { BotCommand } from "../Types/BotCommand";
+import { MusicPlayer } from "../Types/MusicPlayer";
+import { Song } from "../Types/Song";
 import { FindSong } from "../functions/helper";
+
+const subscriptions = new Map<Snowflake, MusicPlayer>();
 
 export default {
   name: "play",
@@ -21,13 +26,15 @@ export default {
     },
   ],
   async execute(interaction) {
+    await interaction.deferReply();
     const { commandName, user, options } = interaction;
-
+    console.info(`** ${commandName} Executed`);
     const searchText = options.getString("text") || "";
-    console.log(searchText);
+
+    interaction.followUp(`Searching for ${searchText}`);
 
     var member = await interaction.guild?.members.fetch({ user, force: true });
-
+    let subscription = subscriptions.get(interaction.guildId);
     // console.log(member, member?.voice);
     // if (!member?.voice.channel) {
     //   interaction.reply({
@@ -37,37 +44,49 @@ export default {
     //   return;
     // }
 
-    var song = await FindSong(searchText);
-    if (!song) {
-      interaction.reply({
-        content: "Could not find the song you looking for.",
-      });
+    // var song = await FindSong(searchText);
+    // if (!song) {
+    //   interaction.followUp("Could not find the song you looking for.");
 
-      return;
-    }
+    //   return;
+    // }
 
-    console.log(song);
     const connection = joinVoiceChannel({
       channelId: "918589401590808651",
       guildId: interaction.guildId,
       adapterCreator: interaction.guild?.voiceAdapterCreator,
     });
 
-    const player = createAudioPlayer();
-    // Play "track.mp3" across two voice connections
-    connection.subscribe(player);
-    //TODO: Check if the string in url format.
+    const musicPlayer = new MusicPlayer(connection);
+    subscriptions.set(interaction.guildId, musicPlayer);
+    subscription = musicPlayer;
 
-    // interaction.deferReply({
-    //   ephemeral: true,
-    // });
+    console.log(connection.voiceConnection);
 
-    const s = ytdlCore(song.url, { filter: "audioonly" });
-    const { stream, type } = await demuxProbe(s);
-    console.log(type);
-    player.play(createAudioResource(stream, { inputType: type }));
-    interaction.reply({
-      content: "get request",
+    const song = await Song.from(searchText, {
+      onStart() {
+        interaction
+          .followUp({ content: `Now playing ! ${song?.title}` })
+          .catch(console.warn);
+      },
+      onFinish() {
+        interaction.followUp({ content: "Now finished!" }).catch(console.warn);
+      },
+      onError(error) {
+        console.warn(error);
+        interaction
+          .followUp({ content: `Error: ${error.message}` })
+          .catch(console.warn);
+      },
     });
+
+    if (song == null) {
+      interaction.followUp("Could not find the song you looking for.");
+
+      return;
+    }
+
+    subscription.enqueue(song);
+    await interaction.followUp(`Enqueued **${song.title}**`);
   },
 } as BotCommand;
