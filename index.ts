@@ -1,7 +1,7 @@
-import DiscordJS, { GuildMember, Intents } from "discord.js";
+import DiscordJS, { Collection, GuildMember, Intents } from "discord.js";
 import dotenv from "dotenv";
-import CommandsTemplates from "./commands";
 import { GetCommandIfExist } from "./functions/helper";
+import { registerGlobalCommands } from "./functions/registerGlobalCommands";
 
 dotenv.config();
 
@@ -13,23 +13,9 @@ const client = new DiscordJS.Client({
   ],
 });
 
-// import fs from "fs";
-// const commandTemplates = fs
-//   .readdirSync("./commands/")
-//   .filter((x) => x.endsWith(".js"))
-//   .forEach((x) => {
-//     const command = require(`./commands/${x}`);
-//     commands.set(command.name, command);
-//   });
-
-client.on("ready", () => {
+client.on("ready", async () => {
   console.log("The bot is up and running.");
-
-  const GuildId = process.env.GUILD_ID || "";
-  const guild = client.guilds.cache.get(GuildId);
-  let commands = guild?.commands;
-
-  CommandsTemplates.forEach((x) => commands?.create(x));
+  if (process.env.RELOAD_COMMANDS) await registerGlobalCommands();
 });
 
 client.on("interactionCreate", async (interaction) => {
@@ -48,15 +34,4 @@ client.on("interactionCreate", async (interaction) => {
   await command.execute(interaction);
 });
 
-// client.on("messageCreate", (message) => {
-//   console.log(message);
-//   if (message.content == "ping") {
-//     message.reply({
-//       content: "pong",
-//     });
-//   }
-// });
-
 client.login(process.env.TOKEN);
-
-function isInVoiceChannel(member: GuildMember) {}

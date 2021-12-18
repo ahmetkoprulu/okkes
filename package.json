@@ -5,12 +5,14 @@
   "main": "index.js",
   "scripts": {
     "dev": "nodemon index.ts",
+    "reload-commands": "RELOAD_COMMANDS=true nodemon index.ts",
     "test": "test"
   },
   "author": "ahmetkoprulu",
   "license": "MIT",
   "dependencies": {
     "@discordjs/opus": "^0.7.0",
+    "@discordjs/rest": "^0.1.0-canary.0",
     "@discordjs/voice": "^0.7.5",
     "discord.js": "^13.3.1",
     "dotenv": "^10.0.0",
