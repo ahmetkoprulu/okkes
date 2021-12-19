@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "dev": "nodemon index.ts",
-    "reload-commands": "RELOAD_COMMANDS=true nodemon index.ts",
+    "dev-reloaded-commands": "RELOAD_COMMANDS=true nodemon index.ts",
     "test": "test"
   },
   "author": "ahmetkoprulu",
