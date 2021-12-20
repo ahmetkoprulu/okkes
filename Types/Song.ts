@@ -1,5 +1,5 @@
 import { AudioResource } from "@discordjs/voice";
-import ytdlCore from "ytdl-core";
+import { raw as YoutubeDl } from "youtube-dl-exec";
 import { FindSong } from "../functions/helper";
 const { createAudioResource, demuxProbe } = require("@discordjs/voice");
 
@@ -32,10 +32,41 @@ export class Song extends SongData {
   }
 
   public async createAudioResource(): Promise<AudioResource<Song>> {
-    const s = ytdlCore(this.url, { filter: "audioonly" });
+    return new Promise((resolve, reject) => {
+      const process = YoutubeDl(
+        this.url,
+        {
+          output: "-",
+          format: "bestaudio[ext=webm+acodec=opus+asr=48000]/bestaudio",
+        },
+        { stdio: ["ignore", "pipe", "ignore"] }
+      );
 
-    const { stream, type } = await demuxProbe(s);
-    return createAudioResource(stream, { metadata: this, inputType: type });
+      if (!process.stdout) {
+        reject(new Error("No stdout"));
+        return;
+      }
+      const stream = process.stdout;
+      const onError = (error: Error) => {
+        if (!process.killed) process.kill();
+        stream.resume();
+        reject(error);
+      };
+      process
+        .once("spawn", () => {
+          demuxProbe(stream)
+            .then((probe: { stream: any; type: any }) =>
+              resolve(
+                createAudioResource(probe.stream, {
+                  metadata: this,
+                  inputType: probe.type,
+                })
+              )
+            )
+            .catch(onError);
+        })
+        .catch(onError);
+    });
   }
 
   public static async from(
