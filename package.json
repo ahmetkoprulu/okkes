@@ -11,7 +11,7 @@
     "build": "tsc",
     "postinstall": "npm run build",
     "dev": "nodemon index.ts",
-    "dev-reloaded-commands": "RELOAD_COMMANDS=true nodemon index.ts",
+    "reload-commands": "npm run build && node ./build/functions/registerGlobalCommands",
     "test": "test"
   },
   "author": "ahmetkoprulu",

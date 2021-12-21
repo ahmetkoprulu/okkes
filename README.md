@@ -15,7 +15,7 @@
     Ökkeş is experimental general purpose discord bot.
     <br />
 
-<button onclick="window.location.href='https://bing.com';" style="background: #783f04;
+<button onclick="window.location.href='https://discord.com/api/oauth2/authorize?client_id=427520954294599680&permissions=8&scope=bot%20applications.commands';" style="background: #783f04;
 background: linear-gradient(#783f04, #b45f06);
 border-radius: 11px;
 border: 0px;
@@ -69,8 +69,6 @@ To get a local copy up and running follow these simple example steps.
 
 ### Prerequisites
 
-This is an example of how to list things you need to use the software and how to install them.
-
 Ökkeş uses `dotenv` module to store the project variables. In order bot to work, it needs two variable in the `.env` file
 
 - `TOKEN_ID` is the token which can be generated or displayed on the `Discord Developer Portal` > `Bot` page.
@@ -83,20 +81,32 @@ Running ökkeş for development is so simple. Ökkeş has hot-reloading since ru
   ```sh
   npm install
   ```
-- You need to run this command to register the commands to your new bot before starting development environment **for the first time**.
+- In order to build js file you can run
   ```sh
-  npm run dev-reloaded-commands
+  npm build
   ```
-  -If there is no command to register you can simply run
+- When you add/remove new commands and force to update discord to display them, you can run the reload command.
+  ```sh
+  npm run reload-commands
+  ```
+- You can simply run the command below to start development
   ```sh
   npm run dev
   ```
+
+### Deployment
+
+- **Heroku**
+  The project is Heroku ready. Since `build` and `postinstall` scripts exist, any node js dyno will handle the deployment.
+- **Docker**
+  Dockerfile included in the project therefore all you need to do is creating docker image by using the command `docker build -t okkes .` then running the image by ` docker run -d --name=okkes-bot okkes`.
 
 ### Commands
 
 - **/play** `text:string`
   Plays the song from the url. Option could be either in url format or set of key words.
-
+- **/loop**
+  Loops the current song.
 - **/queue**
   Displays the music queue users in the voice channel played.
 

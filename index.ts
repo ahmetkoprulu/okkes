@@ -1,7 +1,6 @@
 import DiscordJS, { Collection, GuildMember, Intents } from "discord.js";
 import dotenv from "dotenv";
 import { GetCommandIfExist } from "./functions/helper";
-import { registerGlobalCommands } from "./functions/registerGlobalCommands";
 
 dotenv.config();
 
@@ -15,7 +14,6 @@ const client = new DiscordJS.Client({
 
 client.on("ready", async () => {
   console.log("The bot is up and running.");
-  if (process.env.RELOAD_COMMANDS) await registerGlobalCommands();
 });
 
 client.on("interactionCreate", async (interaction) => {

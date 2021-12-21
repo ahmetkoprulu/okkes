@@ -22,6 +22,7 @@ export class MusicConnection {
   public queue: Song[];
   public queueLock = false;
   public readyLock = false;
+  public isLoop: Boolean = false;
 
   constructor(voiceConnection: VoiceConnection) {
     this.connection = voiceConnection;
@@ -46,24 +47,30 @@ export class MusicConnection {
     SubscriptionStorage.delete(this.connection.joinConfig.guildId);
   }
 
-  private async processQueue(): Promise<void> {
+  private async processQueue(nextResource?: Song): Promise<void> {
     if (
       this.queueLock ||
       this.player.state.status !== AudioPlayerStatus.Idle ||
-      this.queue.length === 0
+      (this.queue.length === 0 && !this.isLoop)
     ) {
       return;
     }
 
     this.queueLock = true;
+    if (nextResource != undefined) {
+      this.player.play(await nextResource.createAudioResource());
+      this.queueLock = false;
 
-    const nextTrack = this.queue.shift()!;
+      return;
+    }
+
+    const nextSong = this.queue.shift()!;
     try {
-      const resource = await nextTrack.createAudioResource();
+      const resource = await nextSong.createAudioResource();
       this.player.play(resource);
       this.queueLock = false;
     } catch (error) {
-      nextTrack.onError(error as Error);
+      nextSong.onError(error as Error);
       this.queueLock = false;
       return this.processQueue();
     }
@@ -120,7 +127,13 @@ export class MusicConnection {
         let o = oldState as { state?: string; resource?: any };
         if (!o.resource) return;
 
-        (o.resource as AudioResource<Song>).metadata.onFinish();
+        var song = (o.resource as AudioResource<Song>).metadata;
+        if (this.isLoop) {
+          void this.processQueue(song);
+          return;
+        }
+
+        song.onFinish();
         void this.processQueue();
       }
     );
@@ -129,13 +142,17 @@ export class MusicConnection {
       AudioPlayerStatus.Playing,
       (_, newState: AudioPlayerPlayingState) => {
         // If the Playing state has been entered, then a new track has started playback.
+        if (this.isLoop) return;
+
         (newState.resource as AudioResource<Song>).metadata.onStart();
       }
     );
 
-    this.player.on("error", (error: AudioPlayerError) =>
-      (error.resource as AudioResource<Song>).metadata.onError(error)
-    );
+    this.player.on("error", (error: AudioPlayerError) => {
+      if (this.isLoop) return;
+
+      (error.resource as AudioResource<Song>).metadata.onError(error);
+    });
   }
 
   private isDisconnectedIntentionaly(state: any): boolean {

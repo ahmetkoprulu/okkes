@@ -25,7 +25,10 @@ export default {
     if (!subscription) {
       const member = interaction.member as GuildMember;
       if (!isUserInChannel(member)) {
-        interaction.followUp("Join a voice channel to summon ökkeş!");
+        interaction.followUp({
+          content: "Join a voice channel to summon ökkeş!",
+          ephemeral: true,
+        });
 
         return;
       }
@@ -40,7 +43,10 @@ export default {
       subscription = musicConnection;
     }
 
-    interaction.followUp(`Searching for ${searchText}`);
+    await interaction.followUp({
+      content: `Searching for ${searchText}`,
+      ephemeral: true,
+    });
 
     const song = await Song.from(searchText, {
       onStart() {
@@ -60,13 +66,19 @@ export default {
     });
 
     if (song == null) {
-      interaction.followUp("Could not find the song you looking for.");
+      await interaction.followUp({
+        content: "Could not find the song you looking for.",
+        ephemeral: true,
+      });
 
       return;
     }
 
     subscription.enqueue(song);
-    await interaction.followUp(`Enqueued **${song.title}**`);
+    await interaction.followUp({
+      content: `Enqueued **${song.title}**`,
+      ephemeral: true,
+    });
   },
 } as BotCommand;
 

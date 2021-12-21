@@ -6,10 +6,12 @@ import ResumeCommand from "./resume";
 import SkipCommand from "./skip";
 import QueueCommand from "./queue";
 import DisconnectCommand from "./disconnect";
+import LoopCommand from "./loop";
 
 export default [
   PingCommand,
   PlayCommand,
+  LoopCommand,
   PauseCommand,
   ResumeCommand,
   SkipCommand,

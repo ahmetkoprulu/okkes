@@ -2,6 +2,9 @@ import { REST } from "@discordjs/rest";
 import { SlashCommandBuilder } from "@discordjs/builders";
 import { Routes } from "discord-api-types/v9";
 import CommandsTemplates from "../commands";
+import DotEnv from "dotenv";
+
+DotEnv.config();
 
 export async function registerGlobalCommands() {
   const commands: any[] = [];
@@ -34,3 +37,5 @@ export async function registerGlobalCommands() {
     console.error(err);
   }
 }
+
+registerGlobalCommands();
